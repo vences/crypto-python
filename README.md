@@ -13,8 +13,8 @@ If you didin't have the latest version of python, please follow this guide to in
 
 # Todo
 
-- [] split the script into functions
-- [] add args parser to perform following actions:
-    - [] generate certificate
-    - [] encrypt
-    - [] decrypt
+- [ ] split the script into functions
+- [ ] add args parser to perform following actions:
+    - [ ] generate certificate
+    - [ ] encrypt
+    - [ ] decrypt
