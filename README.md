@@ -10,3 +10,11 @@ This script used the following packages:
 To use pycryptodome, we need to install it: `pip install pycryptodome`
 
 If you didin't have the latest version of python, please follow this guide to install it: https://docs.python-guide.org/starting/installation/
+
+# Todo
+
+[] split the script into functions
+[] add args parser to perform following actions:
+    [] generate certificate
+    [] encrypt
+    [] decrypt
