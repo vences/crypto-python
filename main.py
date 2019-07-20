@@ -1,62 +1,115 @@
 #!/usr/bin/env python3
 
-# RSA_cryptography.py
-# Importing necessary modules
+# import argparse
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA
-from binascii import hexlify#The message to be encrypted
-message = b'Public and Private keys encryption'
+from binascii import hexlify
 
 def generate_pem():
-    # Generating private key (RsaKey object) of key length of 1024 bits
+    """ Generate private and public key from RSA with a length of 1024 bits
+
+    Returns
+    -------
+    str 
+        private key
+    str
+        public key
+    """
+    # TODO change the key algorithm to ECC curve P-384
     private_key = RSA.generate(1024)
-    # Generating the public key (RsaKey object) from the private key
     public_key = private_key.publickey()
-    # Converting the RsaKey objects to string 
+
     private_pem = private_key.export_key().decode()
     public_pem = public_key.export_key().decode()
+
     return private_pem, public_pem
 
 def write_pem(private_pem, public_pem):
-    # Writing down the private and public keys to 'pem' files
+    """ Write into a file the keys objects, by default the name of the file will be rivate_pem.pem and public_pem.pem save in the same folder as the script
+
+    Parameters
+    ----------
+    private_pem: str
+        the string containing the private key
+    public_pem: str
+        the string containing the public key
+    """
     with open('private_pem.pem', 'w') as pr:
         pr.write(private_pem)
     with open('public_pem.pem', 'w') as pu:
         pu.write(public_pem)
-    return
 
 def import_pem(name_priv_pem, name_pub_pem):
-    # Importing keys from files, converting it into the RsaKey object 
-    # filename input('file name')  
+    """ Import private and public from the file name parameters into 2 strings variable 
+
+    Parameters
+    ----------
+    name_priv_pem: str
+        File name containing the private key
+    name_pub_pem: str
+        File name containing the public key
+    
+    Returns
+    -------
+    object
+        RSA private key object
+    object
+        RSA public key object
+    """
+    # TODO change the algorithme by ECC
     pr_key = RSA.import_key(open('private_pem.pem', 'r').read())
     pu_key = RSA.import_key(open('public_pem.pem', 'r').read())
     return pr_key, pu_key
 
-def encrypt(pu_key):
-    # Instantiating PKCS1_OAEP object with the public key for encryption
+def encrypt(pu_key, message):
+    """ Encrypt a message with an encryption key PKCS1_OAEP and return it
+
+    Parameters
+    ----------
+    pu_key: object
+        The RSA key object to use to encrypt the message
+    message: bytes
+        Plain text message to encrypt
+    
+    Returns
+    -------
+    bytes
+        The ciphertext
+    """
     cipher = PKCS1_OAEP.new(key=pu_key)
-    # Encrypting the message with the PKCS1_OAEP object
     cipher_text = cipher.encrypt(message)
     return cipher_text
 
-def decrypt(pr_key):
-    # Instantiating PKCS1_OAEP object with the private key for decryption
-    decrypt = PKCS1_OAEP.new(key=pr_key)
-    # Decrypting the message with the PKCS1_OAEP object
-    decrypted_message = decrypt.decrypt(cipher_text)
+def decrypt(pr_key, cipher_text):
+    """ Decrypt a message with an encryption key PKCS1_OAEP and return it
+
+    Parameters
+    ----------
+    pr_key: object
+        The RSA key object to use to decrypt the message
+    cipher_text: bytes
+        The encrypted message
+    
+    Returns
+    -------
+    bytes
+        The plain text message
+    """
+    cipher = PKCS1_OAEP.new(key=pr_key)
+    decrypted_message = cipher.decrypt(cipher_text)
     return decrypted_message
 
 private_pem, public_pem = generate_pem()
-print(type(private_pem), type(public_pem))
 write_pem(private_pem, public_pem)
 
 name_priv_pem = 'private_pem.pem'
 name_pub_pem = 'public_pem.pem'
 pr_key, pu_key = import_pem(name_priv_pem, name_pub_pem)
-print(type(pr_key), type(pu_key))
 
-cipher_text = encrypt(pu_key)
+message = b'Public and Private keys encryption'
+
+cipher_text = encrypt(pu_key, message)
 print(cipher_text)
 
-decrypted_message = decrypt(pr_key)
+decrypted_message = decrypt(pr_key, cipher_text)
 print(decrypted_message)
