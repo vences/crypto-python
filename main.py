@@ -3,7 +3,6 @@
 # import argparse
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA
-from binascii import hexlify
 
 def generate_pem():
     """ Generate private and public key from RSA with a length of 1024 bits
@@ -25,7 +24,7 @@ def generate_pem():
     return private_pem, public_pem
 
 def write_pem(private_pem, public_pem):
-    """ Write into a file the keys objects, by default the name of the file will be rivate_pem.pem and public_pem.pem save in the same folder as the script
+    """ Write keys into a file, by default the name of the file will be rivate_pem.pem and public_pem.pem save in the same folder as the script
 
     Parameters
     ----------
@@ -39,77 +38,59 @@ def write_pem(private_pem, public_pem):
     with open('public_pem.pem', 'w') as pu:
         pu.write(public_pem)
 
-def import_pem(name_priv_pem, name_pub_pem):
-    """ Import private and public from the file name parameters into 2 strings variable 
+def import_pem(name_pem):
+    """ Import pem file and return RSA Key object 
 
     Parameters
     ----------
-    name_priv_pem: str
+    name_pem: str
         File name containing the private key
-    name_pub_pem: str
-        File name containing the public key
     
     Returns
     -------
     object
-        RSA private key object
-    object
-        RSA public key object
+        RSA key object
     """
     # TODO change the algorithme by ECC
-    pr_key = RSA.import_key(open('private_pem.pem', 'r').read())
-    pu_key = RSA.import_key(open('public_pem.pem', 'r').read())
-    return pr_key, pu_key
+    key = RSA.import_key(open(name_pem, 'r').read())
+    return key
 
-def encrypt(pu_key, message):
-    """ Encrypt a message with an encryption key PKCS1_OAEP and return it
+def crypto(key, message):
+    """ Decrypt or encrypt a message with an encryption key PKCS1_OAEP and return it
 
     Parameters
     ----------
-    pu_key: object
-        The RSA key object to use to encrypt the message
+    key: object
+        The RSA key object to use to decrypt/encrypt the message
     message: bytes
-        Plain text message to encrypt
+        The encrypted/plain text message
     
     Returns
     -------
     bytes
-        The ciphertext
+        The encrypted/plain text message
     """
-    cipher = PKCS1_OAEP.new(key=pu_key)
-    cipher_text = cipher.encrypt(message)
-    return cipher_text
+    cipher = PKCS1_OAEP.new(key=key)
 
-def decrypt(pr_key, cipher_text):
-    """ Decrypt a message with an encryption key PKCS1_OAEP and return it
+    if key.has_private():
+        result_message = cipher.decrypt(message)
+    else:
+        result_message = cipher.encrypt(message)
 
-    Parameters
-    ----------
-    pr_key: object
-        The RSA key object to use to decrypt the message
-    cipher_text: bytes
-        The encrypted message
-    
-    Returns
-    -------
-    bytes
-        The plain text message
-    """
-    cipher = PKCS1_OAEP.new(key=pr_key)
-    decrypted_message = cipher.decrypt(cipher_text)
-    return decrypted_message
+    return result_message
 
 private_pem, public_pem = generate_pem()
 write_pem(private_pem, public_pem)
 
 name_priv_pem = 'private_pem.pem'
 name_pub_pem = 'public_pem.pem'
-pr_key, pu_key = import_pem(name_priv_pem, name_pub_pem)
+pu_key = import_pem(name_pub_pem)
+pr_key = import_pem(name_priv_pem)
 
 message = b'Public and Private keys encryption'
 
-cipher_text = encrypt(pu_key, message)
+cipher_text = crypto(pu_key, message)
 print(cipher_text)
 
-decrypted_message = decrypt(pr_key, cipher_text)
+decrypted_message = crypto(pr_key, cipher_text)
 print(decrypted_message)
