@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 
-# import argparse
+import argparse
+import string
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA
+from binascii import hexlify
+from binascii import unhexlify
 
 def generate_pem():
     """ Generate private and public key from RSA with a length of 1024 bits
@@ -79,18 +82,91 @@ def crypto(key, message):
 
     return result_message
 
-private_pem, public_pem = generate_pem()
-write_pem(private_pem, public_pem)
 
-name_priv_pem = 'private_pem.pem'
-name_pub_pem = 'public_pem.pem'
-pu_key = import_pem(name_pub_pem)
-pr_key = import_pem(name_priv_pem)
 
-message = b'Public and Private keys encryption'
+def get_args():
+    """
+    Parse the CLI arguments
 
-cipher_text = crypto(pu_key, message)
-print(cipher_text)
+    usage:
+    cmd
+        -g generate certificate by specifing where to store it, default value .
+        -cert specify name of the file --> improvement path of the file
+        -m message that should be encrypt or decrypt
+        -file file that will be decypt/encrypt
+    """
+    parser = argparse.ArgumentParser(description="Little piece of software that encrypt or decrypt a message by using pem files")
 
-decrypted_message = crypto(pr_key, cipher_text)
-print(decrypted_message)
+    parser.add_argument("-g", "--generate", help="generate certificate",
+                        metavar="generate")
+    parser.add_argument("-c","--cert",
+                        help="pem file name used by the program",
+                        metavar="cert")
+    parser.add_argument("-m", "--message", type=str, help="message to encrypt/decypt",
+                        metavar="message")
+    #TODO -f need to be create
+    parser.add_argument("-f", "--file", help="File to decrypt/encrypt",
+                        metavar="FILE")
+    parser.add_argument("-o", "--output", help="Directs the output to a name of your choice",
+                        metavar="output")
+
+    return parser.parse_args() 
+
+def bin2hex(binStr):
+    """Function to convert binary into hexa
+
+    Parameters
+    ----------
+    binStr
+        binary
+    """
+    return hexlify(binStr)
+
+def hex2bin(hexStr):
+    """Function to convert hexa into binary
+
+    Parameters
+    ----------
+    hexStr
+        hexadecimal
+    """
+    return unhexlify(hexStr)
+
+def is_hex(s):
+    """Function to test if a data is an hexa
+
+    Parameters
+    ----------
+    s
+        data
+    """
+    hex_digits = set(string.hexdigits)
+    return all(c in hex_digits for c in s)
+
+def main():
+    args = get_args()
+    if args.generate:
+        private_pem, public_pem = generate_pem()
+        write_pem(private_pem, public_pem)
+    
+    if args.cert and args.message:
+        key = import_pem(args.cert)
+        if is_hex(args.message):
+            message = hex2bin(args.message)
+        else:
+            message = args.message.encode()
+        cipher = crypto(key,message)
+        # try to decode if cipher is a binary else convert into bin and then decode
+        try:
+            cipher = cipher.decode()
+        except UnicodeDecodeError:
+            cipher = bin2hex(cipher).decode()
+        
+        print(cipher)
+        if args.output:
+            with open(args.output, 'w') as output_file:
+                output_file.write(cipher)
+
+if __name__ == "__main__":
+    main()
+    pass

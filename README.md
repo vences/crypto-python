@@ -17,6 +17,8 @@ If you didin't have the latest version of python, please follow this guide to in
 
 [x] split the script into functions
 [ ] add args parser to perform following actions:
-    [ ] generate certificate
-    [ ] encrypt
-    [ ] decrypt
+    [x] generate certificate
+    [x] encrypt
+    [x] decrypt
+    [x] save output into a file
+    [ ] file in input
